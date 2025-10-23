@@ -7,10 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "npm i && node server.js"
-  },
-  "dependencies": {
-    "@sendgrid/mail": "^8.1.6",
+    "build": "npm i",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
