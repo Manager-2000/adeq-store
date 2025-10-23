@@ -1,0 +1,46 @@
+{
+  "services": [
+    {
+      "icon": "fas fa-search-dollar",
+      "title": "Water Surveying",
+      "description": "Professional groundwater and mining surveys using advanced technology to accurately locate water sources.",
+      "link": "#booking",
+      "price": "₦50,000"
+    },
+    {
+      "title": "Borehole Drilling",
+      "icon": "fas fa-toolbox",
+      "description": "Expert borehole drilling services for residential, commercial, and agricultural water supply needs.",
+      "price": "₦155,000",
+      "link": "#booking"
+    },
+    {
+      "title": "Installation",
+      "icon": "fas fa-wrench",
+      "description": "Complete pump and borehole installation services to ensure efficient water delivery to your property.",
+      "price": "₦75,000",
+      "link": "#booking"
+    },
+    {
+      "icon": "fas fa-industry",
+      "title": "Equipment Sales",
+      "description": "We offer top-quality groundwater survey equipment including ADMT systems and pool finders.",
+      "link": "#equipment",
+      "price": "From ₦100,000"
+    },
+    {
+      "icon": "fas fa-tint",
+      "title": "Water Tanks",
+      "description": "Installation of overhead water storage tanks from 4,000 to 40,000+ liters for reliable water storage.",
+      "link": "#contact",
+      "price": "₦25,000+"
+    },
+    {
+      "icon": "fas fa-headset",
+      "title": "Consultation",
+      "description": "Get expert advice on the best water solutions for your specific needs and location.",
+      "link": "#contact",
+      "price": "Free"
+    }
+  ]
+}

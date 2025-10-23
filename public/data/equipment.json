@@ -1,0 +1,59 @@
+{
+  "equipment": [
+    {
+      "name": "ADMT ZN System",
+      "price": "₦200,000",
+      "description": "Advanced groundwater detection system with precision mapping technology for accurate water source location.",
+      "images": [
+        "assets/images/admt 1200ax.webp",
+        "assets/images/admt.jpg",
+        "assets/images/admt 200ax.jpg"
+      ],
+      "featured": true
+    },
+    {
+      "name": "Pool Finder Pro",
+      "price": "₦200,000",
+      "description": "Professional-grade water detection equipment designed for locating underground water pools with high accuracy.",
+      "images": [
+        "assets/images/poolfinder-water.jpeg",
+        "assets/images/admt gd.avif",
+        "assets/images/admt.jpg"
+      ],
+      "featured": true
+    },
+    {
+      "name": "ADMT-300SX System",
+      "price": "₦400,000",
+      "description": "Advanced groundwater detection system with precision mapping technology for accurate water source location.",
+      "images": [
+        "assets/images/admt.jpg",
+        "assets/images/admt 200ax.jpg",
+        "assets/images/admt 1200ax.webp"
+      ],
+      "featured": true
+    },
+    {
+      "name": "ADMT-GOLDEN ROD System",
+      "price": "₦200,000",
+      "description": "Advanced groundwater detection system with precision mapping technology for accurate water source location.",
+      "images": [
+        "assets/images/admt gd.avif",
+        "assets/images/admt 200ax.jpg",
+        "assets/images/admt.jpg"
+      ],
+      "featured": true
+    },
+    {
+      "name": "ABEM TERAMETER System",
+      "price": "₦250,000",
+      "description": "Advanced groundwater detection system with precision mapping technology for accurate water source location.",
+      "images": [
+        "assets/images/ABEM-Terrameter.png",
+        "assets/images/admt gd.avif",
+        "assets/images/admt 1200ax.webp"
+      ],
+      "featured": false
+    }
+  ]
+}

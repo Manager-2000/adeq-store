@@ -1,0 +1,17 @@
+{
+  "contact": {
+    "address": "155 Gbagba Area, Airport Road, Ilorin Kwara State.",
+    "phones": [
+      "+234 810 423 7317",
+      "+234 811 427 5025 30"
+    ],
+    "emails": [
+      "info@adeqintegrated.com",
+      "adeqtesting@gmail.com"
+    ],
+    "hours": {
+      "weekdays": "Monday - Friday: 8am - 6pm",
+      "saturday": "Saturday: 9am - 2pm"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "surveyTypes": [
+    {
+      "value": "residential",
+      "label": "Residential Water Survey"
+    },
+    {
+      "value": "commercial",
+      "label": "Commercial Water Survey"
+    },
+    {
+      "value": "mining",
+      "label": "Mining Survey"
+    },
+    {
+      "value": "borehole",
+      "label": "Borehole Drilling Consultation"
+    }
+  ]
+}

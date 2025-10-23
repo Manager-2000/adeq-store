@@ -1,0 +1,789 @@
+
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ADEQ - Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="admin-auth.js"></script>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#0e7490",
+              secondary: "#0c4a6e",
+              accent: "#0891b2",
+              light: "#f0f9ff",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .login-card {
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .input-field:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.2);
+      }
+      .shake {
+        animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+      @keyframes shake {
+        10%,
+        90% {
+          transform: translateX(-1px);
+        }
+        20%,
+        80% {
+          transform: translateX(2px);
+        }
+        30%,
+        50%,
+        70% {
+          transform: translateX(-4px);
+        }
+        40%,
+        60% {
+          transform: translateX(4px);
+        }
+      }
+      .content-area {
+        display: none;
+      }
+      .content-area.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .stat-card {
+        transition: all 0.3s ease;
+      }
+      .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .nav-item {
+        transition: all 0.2s ease;
+      }
+      .nav-item:hover {
+        background-color: #f0f9ff;
+        border-left: 4px solid #0891b2;
+      }
+      .editor-card {
+        border-left: 4px solid #0891b2;
+      }
+
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .notification.show {
+        transform: translateX(0);
+      }
+
+      .notification.success {
+        background-color: #10b981;
+      }
+
+      .notification.error {
+        background-color: #ef4444;
+      }
+
+      .notification.info {
+        background-color: #3b82f6;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-blue-50 to-cyan-100 min-h-screen">
+    <!-- Login Page (initially shown) -->
+    <div
+      id="loginPage"
+      class="min-h-screen flex items-center justify-center p-4"
+    >
+      <div
+        class="login-card bg-white rounded-xl shadow-xl overflow-hidden w-full max-w-md"
+      >
+        <div class="bg-primary text-white p-6 text-center">
+          <div
+            class="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center mx-auto mb-4"
+          >
+            <i class="fas fa-lock text-white text-2xl"></i>
+          </div>
+          <h1 class="text-2xl font-bold">ADEQ Admin</h1>
+          <p class="text-blue-100 mt-2">Sign in to your dashboard</p>
+        </div>
+
+        <div class="px-8 py-6">
+          <form id="loginForm">
+            <div class="mb-5">
+              <label
+                for="email"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Email Address</label
+              >
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                  <i class="fas fa-envelope text-gray-400"></i>
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  class="input-field pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent py-2 px-3 border"
+                  placeholder="admin@adeq.com"
+                />
+              </div>
+              <p id="emailError" class="mt-1 text-xs text-red-600 hidden">
+                Please enter a valid email address
+              </p>
+            </div>
+
+            <div class="mb-5">
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Password</label
+              >
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                  <i class="fas fa-key text-gray-400"></i>
+                </div>
+                <input
+                  type="password"
+                  id="password"
+                  class="input-field pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-accent py-2 px-3 border"
+                  placeholder="Enter your password"
+                />
+              </div>
+              <p id="passwordError" class="mt-1 text-xs text-red-600 hidden">
+                Password must be at least 8 characters
+              </p>
+            </div>
+
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  class="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
+                />
+                <label for="remember" class="ml-2 block text-sm text-gray-700"
+                  >Remember me</label
+                >
+              </div>
+
+              <div class="text-sm">
+                <a
+                  href="#"
+                  class="font-medium text-primary hover:text-secondary"
+                  >Forgot password?</a
+                >
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                id="loginButton"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-colors"
+              >
+                <span>Sign in</span>
+                <span id="loadingSpinner" class="ml-2 hidden"
+                  ><i class="fas fa-spinner fa-spin"></i
+                ></span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="bg-gray-50 px-8 py-4 rounded-b-xl">
+          <div class="text-center text-sm text-gray-600">
+            <p>Default credentials: admin@adeq.com / password123</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard (initially hidden) -->
+    <div id="dashboardPage" class="hidden">
+      <!-- Admin Header -->
+      <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between h-16">
+            <div class="flex">
+              <div class="flex-shrink-0 flex items-center">
+                <div
+                  class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg mr-3"
+                >
+                  A
+                </div>
+                <span class="text-2xl font-bold text-primary">ADEQ Admin</span>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <div class="ml-3 relative">
+                <div class="flex items-center space-x-4">
+                  <span class="text-gray-700"
+                    >Welcome, <span id="userName">Admin</span></span
+                  >
+                  <a href="/" class="text-primary hover:text-secondary">
+                    <i class="fas fa-eye mr-1"></i> View Site
+                  </a>
+                  <a
+                    href="#"
+                    id="logoutButton"
+                    class="text-red-600 hover:text-red-800"
+                  >
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Navigation & Content -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col md:flex-row gap-8">
+          <!-- Sidebar Navigation -->
+          <div class="md:w-64 bg-white rounded-lg shadow p-4">
+            <nav class="space-y-2">
+              <a
+                href="#"
+                data-target="dashboard"
+                class="nav-item bg-primary text-white group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+              >
+                <i class="fas fa-tachometer-alt mr-3"></i>
+                Dashboard
+              </a>
+              <a
+                href="#"
+                data-target="pages"
+                class="nav-item text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+              >
+                <i class="fas fa-file-alt mr-3"></i>
+                Pages
+              </a>
+              <a
+                href="#"
+                data-target="services"
+                class="nav-item text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+              >
+                <i class="fas fa-concierge-bell mr-3"></i>
+                Services
+              </a>
+              <a
+                href="#"
+                data-target="equipment"
+                class="nav-item text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+              >
+                <i class="fas fa-tools mr-3"></i>
+                Equipment
+              </a>
+              <a
+                href="#"
+                data-target="bookings"
+                class="nav-item text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+              >
+                <i class="fas fa-calendar-check mr-3"></i>
+                Bookings
+              </a>
+              <a
+                href="#"
+                data-target="testimonials"
+                class="nav-item text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+              >
+                <i class="fas fa-star mr-3"></i>
+                Testimonials
+              </a>
+              <a
+                href="#"
+                data-target="settings"
+                class="nav-item text-gray-600 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+              >
+                <i class="fas fa-cog mr-3"></i>
+                Settings
+              </a>
+              <div class="border-t border-gray-200 my-4"></div>
+              <a
+                href="/admin/#/"
+                class="nav-item bg-green-600 text-white hover:bg-green-700 group flex items-center px-3 py-2 text-sm font-medium rounded-md"
+              >
+                <i class="fas fa-database mr-3"></i>
+                Advanced Editor
+              </a>
+            </nav>
+          </div>
+
+          <!-- Main Content Area -->
+          <div class="flex-1">
+            <!-- Dashboard Content -->
+            <div id="dashboard" class="content-area active">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Dashboard Overview
+              </h2>
+
+              <!-- Stats Cards -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="stat-card bg-white p-6 rounded-lg shadow">
+                  <div class="flex items-center">
+                    <div class="bg-blue-100 p-3 rounded-full">
+                      <i
+                        class="fas fa-calendar-check text-blue-600 text-xl"
+                      ></i>
+                    </div>
+                    <div class="ml-4">
+                      <p class="text-sm font-medium text-gray-600">
+                        Pending Bookings
+                      </p>
+                      <p class="text-2xl font-semibold text-gray-900">5</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stat-card bg-white p-6 rounded-lg shadow">
+                  <div class="flex items-center">
+                    <div class="bg-green-100 p-3 rounded-full">
+                      <i
+                        class="fas fa-shopping-cart text-green-600 text-xl"
+                      ></i>
+                    </div>
+                    <div class="ml-4">
+                      <p class="text-sm font-medium text-gray-600">
+                        Equipment Orders
+                      </p>
+                      <p class="text-2xl font-semibold text-gray-900">12</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="stat-card bg-white p-6 rounded-lg shadow">
+                  <div class="flex items-center">
+                    <div class="bg-purple-100 p-3 rounded-full">
+                      <i class="fas fa-star text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                      <p class="text-sm font-medium text-gray-600">
+                        New Testimonials
+                      </p>
+                      <p class="text-2xl font-semibold text-gray-900">3</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Content Management Section -->
+              <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-lg font-medium text-gray-800">
+                    Content Management
+                  </h3>
+                  <a
+                    href="/admin/#/"
+                    class="text-sm text-primary hover:text-secondary font-medium flex items-center"
+                  >
+                    <i class="fas fa-external-link-alt mr-1"></i>
+                    Open Full Editor
+                  </a>
+                </div>
+                <div
+                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+                >
+                  <a
+                    href="/admin/#/collections/pages"
+                    class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow editor-card"
+                  >
+                    <div class="bg-blue-100 p-3 rounded-full inline-flex">
+                      <i class="fas fa-edit text-blue-600 text-xl"></i>
+                    </div>
+                    <p class="mt-2 font-medium">Edit Pages</p>
+                    <p class="text-xs text-gray-500 mt-1">Home, About, etc.</p>
+                  </a>
+                  <a
+                    href="/admin/#/collections/equipment"
+                    class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow editor-card"
+                  >
+                    <div class="bg-green-100 p-3 rounded-full inline-flex">
+                      <i class="fas fa-tools text-green-600 text-xl"></i>
+                    </div>
+                    <p class="mt-2 font-medium">Manage Equipment</p>
+                    <p class="text-xs text-gray-500 mt-1">Products & pricing</p>
+                  </a>
+                  <a
+                    href="/admin/#/collections/services"
+                    class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow editor-card"
+                  >
+                    <div class="bg-purple-100 p-3 rounded-full inline-flex">
+                      <i
+                        class="fas fa-concierge-bell text-purple-600 text-xl"
+                      ></i>
+                    </div>
+                    <p class="mt-2 font-medium">Update Services</p>
+                    <p class="text-xs text-gray-500 mt-1">Services & pricing</p>
+                  </a>
+                  <a
+                    href="/admin/#/collections/testimonials"
+                    class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow editor-card"
+                  >
+                    <div class="bg-yellow-100 p-3 rounded-full inline-flex">
+                      <i class="fas fa-star text-yellow-600 text-xl"></i>
+                    </div>
+                    <p class="mt-2 font-medium">Testimonials</p>
+                    <p class="text-xs text-gray-500 mt-1">Reviews & ratings</p>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="mb-8">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">
+                  Quick Actions
+                </h3>
+                <div
+                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+                >
+                  <a
+                    href="/admin/#/collections/pages/entries/home"
+                    class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow"
+                  >
+                    <div class="bg-blue-100 p-3 rounded-full inline-flex">
+                      <i class="fas fa-home text-blue-600 text-xl"></i>
+                    </div>
+                    <p class="mt-2 font-medium">Edit Homepage</p>
+                  </a>
+                  <a
+                    href="/admin/#/collections/equipment"
+                    class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow"
+                  >
+                    <div class="bg-green-100 p-3 rounded-full inline-flex">
+                      <i class="fas fa-box text-green-600 text-xl"></i>
+                    </div>
+                    <p class="mt-2 font-medium">Add New Product</p>
+                  </a>
+                  <a
+                    href="/admin/#/collections/services"
+                    class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow"
+                  >
+                    <div class="bg-purple-100 p-3 rounded-full inline-flex">
+                      <i class="fas fa-plus-circle text-purple-600 text-xl"></i>
+                    </div>
+                    <p class="mt-2 font-medium">Add New Service</p>
+                  </a>
+                  <a
+                    href="/admin/#/collections/bookings"
+                    class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow"
+                  >
+                    <div class="bg-yellow-100 p-3 rounded-full inline-flex">
+                      <i
+                        class="fas fa-calendar-alt text-yellow-600 text-xl"
+                      ></i>
+                    </div>
+                    <p class="mt-2 font-medium">View Bookings</p>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Recent Activity -->
+              <div>
+                <h3 class="text-lg font-medium text-gray-800 mb-4">
+                  Recent Activity
+                </h3>
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th
+                          scope="col"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Type
+                        </th>
+                        <th
+                          scope="col"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Item
+                        </th>
+                        <th
+                          scope="col"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Date
+                        </th>
+                        <th
+                          scope="col"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div class="bg-blue-100 p-2 rounded-full">
+                              <i class="fas fa-calendar-plus text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                              <div class="text-sm font-medium text-gray-900">
+                                Booking
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-900">
+                            John Smith - Residential Survey
+                          </div>
+                        </td>
+                        <td
+                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                        >
+                          2 hours ago
+                        </td>
+                        <td
+                          class="px-6 py-4 whitespace-nowrap text-sm font-medium"
+                        >
+                          <a
+                            href="#"
+                            class="text-primary hover:text-secondary mr-3"
+                            >Approve</a
+                          >
+                          <a href="#" class="text-red-600 hover:text-red-800"
+                            >Delete</a
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div class="bg-green-100 p-2 rounded-full">
+                              <i
+                                class="fas fa-shopping-cart text-green-600"
+                              ></i>
+                            </div>
+                            <div class="ml-4">
+                              <div class="text-sm font-medium text-gray-900">
+                                Order
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-900">
+                            ADMT System - Sarah Johnson
+                          </div>
+                        </td>
+                        <td
+                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                        >
+                          5 hours ago
+                        </td>
+                        <td
+                          class="px-6 py-4 whitespace-nowrap text-sm font-medium"
+                        >
+                          <a
+                            href="#"
+                            class="text-primary hover:text-secondary mr-3"
+                            >Process</a
+                          >
+                          <a href="#" class="text-red-600 hover:text-red-800"
+                            >Cancel</a
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center">
+                            <div class="bg-purple-100 p-2 rounded-full">
+                              <i class="fas fa-star text-purple-600"></i>
+                            </div>
+                            <div class="ml-4">
+                              <div class="text-sm font-medium text-gray-900">
+                                Testimonial
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-900">
+                            Robert Johnson - Mining Company
+                          </div>
+                        </td>
+                        <td
+                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                        >
+                          1 day ago
+                        </td>
+                        <td
+                          class="px-6 py-4 whitespace-nowrap text-sm font-medium"
+                        >
+                          <a
+                            href="#"
+                            class="text-primary hover:text-secondary mr-3"
+                            >Approve</a
+                          >
+                          <a href="#" class="text-red-600 hover:text-red-800"
+                            >Delete</a
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other content areas (initially hidden) -->
+            <div id="pages" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Page Management
+              </h2>
+              <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <p class="text-gray-600 mb-4">
+                  Manage your website pages through the Netlify CMS editor.
+                </p>
+                <a
+                  href="/admin/#/collections/pages"
+                  class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-md font-medium"
+                  >Open Page Editor</a
+                >
+              </div>
+            </div>
+
+            <div id="services" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Service Management
+              </h2>
+              <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <p class="text-gray-600 mb-4">
+                  Edit your services and pricing information.
+                </p>
+                <a
+                  href="/admin/#/collections/services"
+                  class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-md font-medium"
+                  >Open Services Editor</a
+                >
+              </div>
+            </div>
+
+            <div id="equipment" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Equipment Management
+              </h2>
+              <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <p class="text-gray-600 mb-4">
+                  Update your equipment listings, prices, and availability.
+                </p>
+                <a
+                  href="/admin/#/collections/equipment"
+                  class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-md font-medium"
+                  >Open Equipment Editor</a
+                >
+              </div>
+            </div>
+
+            <div id="bookings" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Booking Management
+              </h2>
+              <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <p class="text-gray-600 mb-4">
+                  View and manage incoming booking requests.
+                </p>
+                <a
+                  href="/admin/#/collections/bookings"
+                  class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-md font-medium"
+                  >Open Bookings Manager</a
+                >
+              </div>
+            </div>
+
+            <div id="testimonials" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Testimonial Management
+              </h2>
+              <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <p class="text-gray-600 mb-4">
+                  Approve or reject new customer testimonials.
+                </p>
+                <a
+                  href="/admin/#/collections/testimonials"
+                  class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-md font-medium"
+                  >Open Testimonials Manager</a
+                >
+              </div>
+            </div>
+
+            <div id="settings" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">Settings</h2>
+              <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <p class="text-gray-600 mb-4">
+                  Configure your website settings and preferences.
+                </p>
+                <a
+                  href="/admin/#/collections/settings"
+                  class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-md font-medium"
+                  >Open Settings</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading indicator for dashboard -->
+    <div
+      id="dashboardContent"
+      class="opacity-0 transition-opacity duration-500"
+    >
+      <!-- Your existing dashboard content goes here -->
+    </div>
+    <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
+    <script src="/admin/admin-auth.js"></script>
+    <script src="/dashboard.js"></script>
+    <script src="/cms-loader.js"></script>
+  
+  </body>
+</html>

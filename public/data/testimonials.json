@@ -1,0 +1,32 @@
+{
+  "testimonials": [
+    {
+      "initials": "SM",
+      "name": "Sarah Miller",
+      "role": "Commercial Client",
+      "text": "\"The borehole drilling service was exceptional. From survey to installation, the team was professional, punctual, and delivered exactly what was promised.\"",
+      "rating": 5
+    },
+    {
+      "initials": "RJ",
+      "name": "Robert Johnson",
+      "role": "Mining Company",
+      "text": "\"We've been using ADEQ's surveying services for our mining operations for years. Their accuracy and detailed reports have saved us both time and resources.\"",
+      "rating": 4.5
+    },
+    {
+      "name": "tunde",
+      "initials": "Ay",
+      "role": "Residential Client",
+      "text": "wonderful a",
+      "rating": 5
+    },
+    {
+      "name": "sade",
+      "initials": "SD",
+      "role": "Residential Client",
+      "text": "wonderfull",
+      "rating": 5
+    }
+  ]
+}

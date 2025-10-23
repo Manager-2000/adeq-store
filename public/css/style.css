@@ -1,0 +1,518 @@
+/* mobile nav bar */
+.navbar-transition {
+  transition: all 0.3s ease;
+}
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 70%;
+  max-width: 300px;
+  height: 100vh;
+  background: white;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  transition: right 0.4s ease;
+  z-index: 100;
+  overflow-y: auto;
+}
+.mobile-menu.open {
+  right: 0;
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 99;
+}
+.overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.auth-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.auth-modal.open {
+  display: flex;
+}
+
+@media (min-width: 1024px) {
+  .mobile-menu {
+    display: none;
+  }
+  .overlay {
+    display: none;
+  }
+}
+
+/* ensure overlay text is readable */
+.hero-carousel .splide__slide h1 {
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+.hero-carousel .splide__slide p {
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+.hero-carousel .splide__slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%; /* Move focus upward */
+} /* Custom Hero Slider Styles */
+#heroSlides > div {
+  transition: opacity 1s ease-in-out;
+}
+
+/* Smooth transitions */
+#heroSlides > div.opacity-0 {
+  pointer-events: none;
+}
+
+#heroSlides > div.opacity-100 {
+  pointer-events: all;
+}
+
+/* Navigation buttons hover effects */
+#heroPrev:hover,
+#heroNext:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Dot indicators */
+#heroDots button {
+  transition: all 0.3s ease;
+}
+
+#heroDots button:hover {
+  transform: scale(1.2);
+}
+
+/* Stats counter */
+.stats-counter {
+  transition: all 0.5s ease;
+}
+
+/* Cart count badge */
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Map container */
+#map {
+  height: 400px;
+  width: 100%;
+  border-radius: 12px;
+  z-index: 1;
+}
+
+/* Animation for elements */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Paystack payment button */
+.paystack-button {
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  background-color: #00aef0;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+.paystack-button:hover {
+  background-color: #0092c9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom animations */
+@keyframes waterDrop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.water-drop {
+  animation: waterDrop 2s ease-in-out infinite;
+}
+
+/* Section fade-in animation */
+.section-hidden {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 1s;
+}
+
+.section-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* slide image for equipment */
+.slider-image {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  position: absolute;
+  inset: 0;
+}
+.slider-image.active {
+  opacity: 1;
+}
+
+#modalImg {
+  width: 700px; /* fixed width */
+  height: 500px; /* fixed height */
+  object-fit: contain; /* keeps image inside box without distortion */
+}
+
+/* Default: Row layout on desktops */
+#equipment .flex.justify-between.items-center {
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+}
+
+/* On tablets and smaller: stack vertically */
+@media (max-width: 1024px) {
+  #equipment .flex.justify-between.items-center {
+    flex-direction: column;
+    align-items: flex-start; /* aligns button under price, left-aligned */
+    gap: 0.5rem;
+  }
+
+  #equipment .flex.justify-between.items-center button.add-to-cart {
+    width: 100%; /* make button full width for a clean look */
+    text-align: center;
+  }
+
+  #equipment .flex.justify-between.items-center span {
+    white-space: nowrap;
+  }
+}
+
+/* Email verification-digit */
+.verification-digit {
+  width: 40px;
+  height: 50px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.verification-digit:focus {
+  border-color: #0e7490;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.1);
+  outline: none;
+}
+
+#verificationForm {
+  text-align: center;
+}
+
+#verificationForm p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.digit-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.verification-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* login/register button */
+
+/* Dropdown animation */
+
+.relative {
+  position: relative;
+}
+
+#userDropdown {
+  position: absolute;
+  right: 0;
+  top: 100%; /* Position below the button */
+  margin-top: 0.5rem;
+  width: 12rem; /* 48 = 12rem */
+  background: white;
+  color: #1f2937; /* text-gray-800 */
+  border-radius: 0.375rem; /* rounded-md */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+  padding: 0.25rem 0; /* py-1 */
+  z-index: 1000; /* Increased z-index */
+  border: 1px solid #e5e7eb; /* border */
+  display: none; /* Start hidden */
+}
+
+#userDropdown:not(.hidden) {
+  display: block; /* Show when not hidden */
+}
+
+/* Ensure the dropdown is above everything */
+#userDropdown {
+  z-index: 9999 !important;
+}
+
+/* Make sure the header has proper z-index */
+header {
+  position: relative;
+  z-index: 100;
+}
+
+.auth-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none; /* Start hidden */
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.auth-modal:not(.hidden) {
+  display: flex; /* Show when not hidden */
+}
+
+/* login requirement indicator */
+/* Add to your CSS */
+.requires-login {
+  position: relative;
+}
+
+.requires-login::after {
+  content: "🔒";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4444;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.requires-login:hover::before {
+  content: "Login required";
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+/* Add to your CSS file */
+.naira-symbol {
+  font-family: Arial, sans-serif;
+}
+
+.cart-notification {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.hidden-equipment {
+  display: none !important;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quantity-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.quantity-btn:hover {
+  transform: scale(1.1);
+}
+
+.hidden-equipment {
+  display: none !important;
+}
+
+/* Smooth animations for equipment items */
+.equipment-item {
+  transition: all 0.3s ease;
+}
+
+.hidden-equipment {
+  display: none !important;
+}
+
+.equipment-item {
+  transition: all 0.3s ease;
+}
+
+/* Equipment Slider Styles */
+.slider-image {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.slider-image.active {
+  opacity: 1;
+}
+
+/* Projects Section Animations */
+.project-card {
+  transition: all 0.3s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-8px);
+}
+
+/* Gradient overlay for project images */
+.project-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.project-image-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    rgba(14, 116, 144, 0.1),
+    rgba(12, 74, 110, 0.1)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.project-card:hover .project-image-container::before {
+  opacity: 1;
+}
+
+/* Add these animations to your CSS */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Line clamp utility */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Hover effects */
+.shadow-gradient:hover {
+  box-shadow: 0 20px 40px rgba(14, 116, 144, 0.15);
+}

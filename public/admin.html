@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ADEQ - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .content-area {
+        display: none;
+      }
+      .content-area.active {
+        display: block;
+      }
+      .nav-item.active {
+        background-color: #0e7490;
+        color: white;
+      }
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+      }
+      .notification.success {
+        background-color: #10b981;
+      }
+      .notification.error {
+        background-color: #ef4444;
+      }
+      .editor-section {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .content-area {
+        display: none;
+      }
+      .content-area.active {
+        display: block;
+      }
+      .nav-item.active {
+        background-color: #0e7490;
+        color: white;
+      }
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      .notification.success {
+        background-color: #10b981;
+      }
+      .notification.error {
+        background-color: #ef4444;
+      }
+      .notification.info {
+        background-color: #3b82f6;
+      } /* Added blue for info messages */
+      .notification.warning {
+        background-color: #f59e0b;
+      } /* Added orange for warnings */
+      .editor-section {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <!-- Login Page -->
+    <div
+      id="loginPage"
+      class="min-h-screen flex items-center justify-center p-4"
+    >
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-8">
+        <div class="text-center mb-8">
+          <div
+            class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4"
+          >
+            <i class="fas fa-lock text-blue-600 text-2xl"></i>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-800">ADEQ Admin</h1>
+          <p class="text-gray-600 mt-2">Sign in to manage your content</p>
+        </div>
+
+        <form id="loginForm">
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              id="email"
+              class="w-full p-3 border border-gray-300 rounded-lg"
+              placeholder="admin@adeq.com"
+              required
+            />
+          </div>
+          <div class="mb-6">
+            <label class="block text-gray-700 mb-2">Password</label>
+            <input
+              type="password"
+              id="password"
+              class="w-full p-3 border border-gray-300 rounded-lg"
+              placeholder="Enter password"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700"
+          >
+            Sign In
+          </button>
+        </form>
+
+        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+          <p class="text-sm text-gray-600 text-center">
+            Default: admin@adeq.com / password123
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardPage" class="hidden">
+      <!-- Header -->
+      <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center">
+              <div
+                class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold mr-3"
+              >
+                A
+              </div>
+              <span class="text-xl font-bold text-gray-800">ADEQ Admin</span>
+            </div>
+            <div class="flex items-center space-x-4">
+              <span class="text-gray-700"
+                >Welcome, <span id="userName">Admin</span></span
+              >
+              <a href="index.html" class="text-blue-600 hover:text-blue-800">
+                <i class="fas fa-eye mr-1"></i>View Site
+              </a>
+              <button id="logoutButton" class="text-red-600 hover:text-red-800">
+                <i class="fas fa-sign-out-alt mr-1"></i>Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex gap-8">
+          <!-- Sidebar -->
+          <div class="w-64 bg-white rounded-lg shadow p-4">
+            <nav class="space-y-2">
+              <button
+                data-target="dashboard"
+                class="nav-item active w-full text-left p-3 rounded-lg bg-blue-600 text-white"
+              >
+                <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+              </button>
+              <button
+                data-target="hero"
+                class="nav-item w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                <i class="fas fa-images mr-3"></i>Hero Slider
+              </button>
+              <button
+                data-target="services"
+                class="nav-item w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                <i class="fas fa-concierge-bell mr-3"></i>Services
+              </button>
+              <button
+                data-target="equipment"
+                class="nav-item w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                <i class="fas fa-tools mr-3"></i>Equipment
+              </button>
+              <button
+                data-target="projects"
+                class="nav-item w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                <i class="fas fa-project-diagram mr-3"></i>Projects
+              </button>
+              <button
+                data-target="testimonials"
+                class="nav-item w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                <i class="fas fa-star mr-3"></i>Testimonials
+              </button>
+              <button
+                data-target="contact"
+                class="nav-item w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                <i class="fas fa-address-book mr-3"></i>Contact Info
+              </button>
+            </nav>
+          </div>
+
+          <!-- Main Content -->
+          <div class="flex-1">
+            <!-- Dashboard -->
+            <div id="dashboard" class="content-area active">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                  <div class="flex items-center">
+                    <div class="bg-blue-100 p-3 rounded-full">
+                      <i class="fas fa-concierge-bell text-blue-600"></i>
+                    </div>
+                    <div class="ml-4">
+                      <p class="text-sm text-gray-600">Services</p>
+                      <p id="servicesCount" class="text-2xl font-semibold">-</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow">
+                  <div class="flex items-center">
+                    <div class="bg-green-100 p-3 rounded-full">
+                      <i class="fas fa-tools text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                      <p class="text-sm text-gray-600">Equipment</p>
+                      <p id="equipmentCount" class="text-2xl font-semibold">
+                        -
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow">
+                  <div class="flex items-center">
+                    <div class="bg-purple-100 p-3 rounded-full">
+                      <i class="fas fa-star text-purple-600"></i>
+                    </div>
+                    <div class="ml-4">
+                      <p class="text-sm text-gray-600">Testimonials</p>
+                      <p id="testimonialsCount" class="text-2xl font-semibold">
+                        -
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <button
+                    data-target="services"
+                    class="p-4 border border-gray-200 rounded-lg text-center hover:shadow-md transition"
+                  >
+                    <i
+                      class="fas fa-plus-circle text-blue-600 text-xl mb-2"
+                    ></i>
+                    <p class="font-medium">Add Service</p>
+                  </button>
+                  <button
+                    data-target="equipment"
+                    class="p-4 border border-gray-200 rounded-lg text-center hover:shadow-md transition"
+                  >
+                    <i class="fas fa-tools text-green-600 text-xl mb-2"></i>
+                    <p class="font-medium">Add Equipment</p>
+                  </button>
+                  <button
+                    data-target="projects"
+                    class="p-4 border border-gray-200 rounded-lg text-center hover:shadow-md transition"
+                  >
+                    <i
+                      class="fas fa-project-diagram text-purple-600 text-xl mb-2"
+                    ></i>
+                    <p class="font-medium">Add Project</p>
+                  </button>
+                  <button
+                    data-target="testimonials"
+                    class="p-4 border border-gray-200 rounded-lg text-center hover:shadow-md transition"
+                  >
+                    <i class="fas fa-star text-yellow-600 text-xl mb-2"></i>
+                    <p class="font-medium">Add Testimonial</p>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hero Editor -->
+            <div id="hero" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Hero Slider Management
+              </h2>
+              <div class="editor-section">
+                <h3 class="text-lg font-semibold mb-4">Manage Hero Slides</h3>
+                <div id="heroSlidesContainer"></div>
+                <button
+                  id="addHeroSlide"
+                  class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  <i class="fas fa-plus mr-2"></i>Add New Slide
+                </button>
+              </div>
+            </div>
+
+            <!-- Services Editor -->
+            <div id="services" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Services Management
+              </h2>
+              <div class="editor-section">
+                <h3 class="text-lg font-semibold mb-4">Manage Services</h3>
+                <div id="servicesContainer"></div>
+                <button
+                  id="addService"
+                  class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  <i class="fas fa-plus mr-2"></i>Add New Service
+                </button>
+              </div>
+            </div>
+
+            <!-- Equipment Editor -->
+            <div id="equipment" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Equipment Management
+              </h2>
+              <div class="editor-section">
+                <h3 class="text-lg font-semibold mb-4">Manage Equipment</h3>
+                <div id="equipmentContainer"></div>
+                <button
+                  id="addEquipment"
+                  class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  <i class="fas fa-plus mr-2"></i>Add New Equipment
+                </button>
+              </div>
+            </div>
+
+            <!-- Projects Editor -->
+            <div id="projects" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Projects Management
+              </h2>
+              <div class="editor-section">
+                <h3 class="text-lg font-semibold mb-4">Manage Projects</h3>
+                <div id="projectsContainer"></div>
+                <button
+                  id="addProject"
+                  class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  <i class="fas fa-plus mr-2"></i>Add New Project
+                </button>
+              </div>
+            </div>
+
+            <!-- Testimonials Editor -->
+            <div id="testimonials" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Testimonials Management
+              </h2>
+              <div class="editor-section">
+                <h3 class="text-lg font-semibold mb-4">Manage Testimonials</h3>
+                <div id="testimonialsContainer"></div>
+                <button
+                  id="addTestimonial"
+                  class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  <i class="fas fa-plus mr-2"></i>Add New Testimonial
+                </button>
+              </div>
+            </div>
+
+            <!-- Contact Info Editor -->
+            <div id="contact" class="content-area">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                Contact Information
+              </h2>
+              <div class="editor-section">
+                <h3 class="text-lg font-semibold mb-4">
+                  Update Contact Details
+                </h3>
+                <form id="contactForm">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Address</label>
+                      <input
+                        type="text"
+                        id="contactAddress"
+                        class="w-full p-3 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Phone 1</label>
+                      <input
+                        type="text"
+                        id="contactPhone1"
+                        class="w-full p-3 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Phone 2</label>
+                      <input
+                        type="text"
+                        id="contactPhone2"
+                        class="w-full p-3 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Email 1</label>
+                      <input
+                        type="email"
+                        id="contactEmail1"
+                        class="w-full p-3 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Email 2</label>
+                      <input
+                        type="email"
+                        id="contactEmail2"
+                        class="w-full p-3 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2"
+                        >Weekday Hours</label
+                      >
+                      <input
+                        type="text"
+                        id="contactWeekdays"
+                        class="w-full p-3 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2"
+                        >Saturday Hours</label
+                      >
+                      <input
+                        type="text"
+                        id="contactSaturday"
+                        class="w-full p-3 border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    class="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+                  >
+                    Save Contact Information
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/simple-admin.js"></script>
+  </body>
+</html>
