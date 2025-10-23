@@ -46,6 +46,7 @@ const JWT_SECRET =
 // Setup Nodemailer transporter with environment variables
 const transporter = nodemailer.createTransport({
   service: "gmail",
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER || "adeqtesting@gmail.com",
     pass: process.env.EMAIL_PASS || "dycg fklc oxvg gpfs",
@@ -1095,7 +1096,7 @@ app.post("/api/send-verification", async (req, res) => {
     const mailOptions = {
       from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
       to: email,
-      subject: "Verify Your Email Address - ADEQ Water Solutions",
+      subject: "ADEQ Water Solutions",
       html: `
         <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:8px;">
           <h2 style="color:#0e7490; text-align:center;">ADEQ Water Solutions</h2>

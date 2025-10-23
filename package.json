@@ -10,6 +10,7 @@
     "build": "npm install && ls"
   },
   "dependencies": {
+    "resend": "^3.0.0",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
