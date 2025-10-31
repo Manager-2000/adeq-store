@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import bodyParser from "body-parser";
 import fs from "fs";
 import path from "path";
@@ -43,12 +43,21 @@ connectDB();
 const JWT_SECRET =
   process.env.JWT_SECRET || "adeq-water-solutions-secret-key-2024";
 
-// Setup Resend with environment variable
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Setup Nodemailer transporter with environment variables
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER || "adeqtesting@gmail.com",
+    pass: process.env.EMAIL_PASS || "dycg fklc oxvg gpfs",
+  },
+});
 
-// Log email configuration
-console.log("📧 Resend configuration:", {
-  hasApiKey: !!process.env.RESEND_API_KEY,
+// Log email configuration (without showing full password)
+console.log("📧 Email configuration:", {
+  user: process.env.EMAIL_USER || "adeqtesting@gmail.com",
+  service: "gmail",
+  hasPassword: !!process.env.EMAIL_PASS,
 });
 
 //Helper function to read JSON files
@@ -164,8 +173,8 @@ app.post("/api/auth/register", async (req, res) => {
 
     // Send verification email
     try {
-      const { data, error } = await resend.emails.send({
-        from: "ADEQ Water Solutions <onboarding@resend.dev>",
+      const mailOptions = {
+        from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
         to: email,
         subject: "Verify Your Email Address - ADEQ Water Solutions",
         html: `
@@ -191,13 +200,10 @@ app.post("/api/auth/register", async (req, res) => {
             </div>
           </div>
         `,
-      });
+      };
 
-      if (error) {
-        console.error("❌ Resend error:", error);
-      } else {
-        console.log(`✅ Verification email sent to ${email}`);
-      }
+      await transporter.sendMail(mailOptions);
+      console.log(`✅ Verification email sent to ${email}`);
     } catch (emailError) {
       console.error("❌ Failed to send verification email:", emailError);
       // Continue even if email fails
@@ -353,8 +359,8 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
     // Send reset email
     try {
-      const { data, error } = await resend.emails.send({
-        from: "ADEQ Water Solutions <onboarding@resend.dev>",
+      const mailOptions = {
+        from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
         to: email,
         subject: "Password Reset Request - ADEQ Water Solutions",
         html: `
@@ -381,13 +387,10 @@ app.post("/api/auth/forgot-password", async (req, res) => {
             </div>
           </div>
         `,
-      });
+      };
 
-      if (error) {
-        console.error("❌ Resend error:", error);
-      } else {
-        console.log(`✅ Password reset email sent to ${email}`);
-      }
+      await transporter.sendMail(mailOptions);
+      console.log(`✅ Password reset email sent to ${email}`);
     } catch (emailError) {
       console.error("❌ Failed to send password reset email:", emailError);
     }
@@ -697,7 +700,7 @@ app.post("/api/equipment/update", (req, res) => {
   }
 });
 
-// Your existing email routes (updated to use Resend)
+// Your existing email routes (unchanged)
 app.post("/send-email", async (req, res) => {
   console.log("📧 Received email request:", req.body);
 
@@ -925,48 +928,48 @@ app.post("/send-email", async (req, res) => {
               <td style="padding:10px; border-bottom:1px solid #eee;">Equipment Purchase</td>
             </tr>
             <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Total Amount:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-size:18px; color:#dc2626; font-weight:bold;">₦${amount.toLocaleString()}</td>
+              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Items:</td>
+              <td style="padding:10px; border-bottom:1px solid #eee;">
+                <ul style="margin:0; padding-left:20px;">
+                  ${orderDetails
+                    .map(
+                      (item) => `
+                    <li><strong>${item.product}</strong> - Quantity: ${
+                        item.quantity
+                      } - Price: ₦${(
+                        item.price * item.quantity
+                      ).toLocaleString()}</li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              </td>
             </tr>
-          </table>
-
-          <h4 style="color:#dc2626;">Order Items:</h4>
-          <table style="width:100%; border-collapse:collapse; margin:10px 0;">
-            ${orderDetails
-              .map(
-                (item, index) => `
-              <tr>
-                <td style="padding:8px; border:1px solid #ddd; background:#f8f8f8;">
-                  <strong>${item.product}</strong><br/>
-                  Quantity: ${item.quantity}<br/>
-                  Unit Price: ₦${item.price.toLocaleString()}<br/>
-                  Subtotal: ₦${(item.price * item.quantity).toLocaleString()}
-                </td>
-              </tr>
-            `
-              )
-              .join("")}
+            <tr>
+              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Total Amount:</td>
+              <td style="padding:10px; border-bottom:1px solid #eee;">₦${amount.toLocaleString()}</td>
+            </tr>
           </table>
         </div>
 
         <div style="background:#f0f9ff; padding:15px; border-radius:8px; margin:20px 0;">
           <h4 style="color:#0e7490; margin-top:0;">Action Required:</h4>
-          <p>Please contact the customer immediately to confirm order details and arrange for equipment preparation and shipping.</p>
+          <p>Please prepare the equipment for shipping and contact the customer within 24 hours.</p>
           <p><strong>Customer Phone:</strong> ${phone}</p>
           <p><strong>Customer Email:</strong> ${email}</p>
         </div>
       </div>
     `;
   } else {
-    ownerSubject = `🚨 NEW BOOKING - ${reference}`;
+    ownerSubject = `🚨 NEW BOOKING: ${service} - ${reference}`;
     const totalAmount = paymentType === "half" ? amount * 2 : amount;
 
     ownerHtml = `
       <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:8px;">
-        <h2 style="color:#dc2626; text-align:center;">NEW BOOKING! 🚨</h2>
+        <h2 style="color:#dc2626; text-align:center;">NEW BOOKING: ${service} - ${reference}</h2>
         
         <div style="background:#fef2f2; padding:20px; border-radius:8px; margin:20px 0;">
-          <h3 style="color:#dc2626; margin-top:0;">Booking Details</h3>
+          <h3 style="color:#dc2626; margin-top:0;">Customer Booking Details</h3>
           
           <table style="width:100%; border-collapse:collapse; margin:20px 0;">
             <tr>
@@ -1000,90 +1003,184 @@ app.post("/send-email", async (req, res) => {
               <td style="padding:10px; border-bottom:1px solid #eee;">${
                 paymentType === "half" ? "50% Deposit" : "Full Payment"
               }</td>
-            </tr>
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Amount ${
-                paymentType === "half" ? "Deposited" : "Paid"
-              }:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">₦${amount.toLocaleString()}</td>
-            </tr>
-            ${
-              paymentType === "half"
-                ? `
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Remaining Balance:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">₦${amount.toLocaleString()}</td>
-            </tr>
-            `
-                : ""
-            }
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Total Amount:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-size:18px; color:#dc2626; font-weight:bold;">₦${totalAmount.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Location:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">${location}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Preferred Date:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">${date}</td>
-            </tr>
-            ${
-              details
-                ? `
+          </tr>
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Amount Received:</td>
+            <td style="padding:10px; border-bottom:1px solid #eee;">₦${amount.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Total Amount:</td>
+            <td style="padding:10px; border-bottom:1px solid #eee;">₦${totalAmount.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Location:</td>
+            <td style="padding:10px; border-bottom:1px solid #eee;">${location}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Preferred Date:</td>
+            <td style="padding:10px; border-bottom:1px solid #eee;">${date}</td>
+          </tr>
+          ${
+            details
+              ? `
             <tr>
               <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Details:</td>
               <td style="padding:10px; border-bottom:1px solid #eee;">${details}</td>
             </tr>
             `
-                : ""
-            }
-          </table>
-        </div>
-
-        <div style="background:#f0f9ff; padding:15px; border-radius:8px; margin:20px 0;">
-          <h4 style="color:#0e7490; margin-top:0;">Action Required:</h4>
-          <p>Please contact the customer within <strong>24 hours</strong> to confirm the booking schedule and details.</p>
-          <p><strong>Customer Phone:</strong> ${phone}</p>
-          <p><strong>Customer Email:</strong> ${email}</p>
-        </div>
+              : ""
+          }
+        </table>
       </div>
-    `;
+
+      <div style="background:#f0f9ff; padding:15px; border-radius:8px; margin:20px 0;">
+        <h4 style="color:#0e7490; margin-top:0;">Action Required:</h4>
+        <p>Please contact the customer within 24 hours to confirm the booking schedule.</p>
+        <p><strong>Customer Phone:</strong> ${phone}</p>
+        <p><strong>Customer Email:</strong> ${email}</p>
+      </div>
+    </div>
+  `;
   }
 
+  const customerMailOptions = {
+    from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
+    to: email,
+    subject: customerSubject,
+    html: customerHtml,
+  };
+
+  const ownerMailOptions = {
+    from: "ADEQ Booking System <adeqtesting@gmail.com>",
+    to: "adeqtesting@gmail.com", // Your actual business email
+    subject: ownerSubject,
+    html: ownerHtml,
+  };
+
   try {
-    // Send email to customer
-    const customerEmailResult = await resend.emails.send({
-      from: "ADEQ Water Solutions <onboarding@resend.dev>",
-      to: email,
-      subject: customerSubject,
-      html: customerHtml,
-    });
+    await Promise.all([
+      transporter.sendMail(customerMailOptions),
+      transporter.sendMail(ownerMailOptions),
+    ]);
 
-    // Send email to owner (use your actual business email)
-    const ownerEmailResult = await resend.emails.send({
-      from: "ADEQ Water Solutions <onboarding@resend.dev>",
-      to: "info@adeqintegrated.com", // Replace with actual owner email
-      subject: ownerSubject,
-      html: ownerHtml,
-    });
-
-    console.log("✅ Emails sent successfully via Resend");
-    console.log("📧 Customer email result:", customerEmailResult);
-    console.log("📧 Owner email result:", ownerEmailResult);
+    console.log("✅ Emails sent successfully!");
+    console.log("📧 Customer email sent to:", email);
+    console.log("📧 Owner email sent to: adeqtesting@gmail.com");
 
     res.json({
       success: true,
-      message: "Emails sent successfully!",
-      reference: reference,
+      message: "Confirmation emails sent successfully",
     });
   } catch (error) {
-    console.error("❌ Resend email error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to send emails. Please try again.",
+    console.error("❌ Email Error:", error);
+    res.json({
+      success: true, // Still return success so payment doesn't fail
+      message:
+        "Payment successful! There was an issue with email notifications, but we will contact you shortly.",
+      emailError: true,
     });
+  }
+});
+
+//Verification Email Route
+app.post("/api/send-verification", async (req, res) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing email or code" });
+  }
+
+  try {
+    const mailOptions = {
+      from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
+      to: email,
+      subject: "ADEQ Water Solutions",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:8px;">
+          <h2 style="color:#0e7490; text-align:center;">ADEQ Water Solutions</h2>
+          
+          <div style="background:#f0f9ff; padding:20px; border-radius:8px; margin:20px 0;">
+            <h3 style="color:#0e7490; margin-top:0;">Email Verification</h3>
+            <p>Thank you for registering with ADEQ Water Solutions!</p>
+            <p>Your verification code is:</p>
+            <div style="text-align:center; margin:20px 0;">
+              <div style="display:inline-block; background:#0e7490; color:white; padding:15px 30px; border-radius:8px; font-size:28px; font-weight:bold; letter-spacing:3px;">
+                ${code}
+              </div>
+            </div>
+            <p>Enter this code in the verification form to complete your registration.</p>
+            <p style="font-size:12px; color:#666; margin-top:20px;">If you didn't request this code, please ignore this email.</p>
+          </div>
+          
+          <div style="text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #eee;">
+            <p style="color:#666; font-size:14px;">Thank you for choosing ADEQ Water Solutions</p>
+            <p style="color:#999; font-size:12px;">Ilorin, Kwara State, Nigeria</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Verification email sent to ${email}`);
+    res.json({ success: true, message: "Verification email sent" });
+  } catch (error) {
+    console.error("❌ Failed to send verification email:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to send verification email" });
+  }
+});
+
+// ✅ Enhanced Password Reset Email Route
+app.post("/api/send-password-reset", async (req, res) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing email or code" });
+  }
+
+  try {
+    const mailOptions = {
+      from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
+      to: email,
+      subject: "Password Reset Request - ADEQ Water Solutions",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:8px;">
+          <h2 style="color:#0e7490; text-align:center;">ADEQ Water Solutions</h2>
+          
+          <div style="background:#f0f9ff; padding:20px; border-radius:8px; margin:20px 0;">
+            <h3 style="color:#0e7490; margin-top:0;">Password Reset Request</h3>
+            <p>We received a request to reset your password for your ADEQ Water Solutions account.</p>
+            <p>Your password reset code is:</p>
+            <div style="text-align:center; margin:20px 0;">
+              <div style="display:inline-block; background:#0e7490; color:white; padding:15px 30px; border-radius:8px; font-size:28px; font-weight:bold; letter-spacing:3px;">
+                ${code}
+              </div>
+            </div>
+            <p>Enter this code in the password reset form to create a new password.</p>
+            <p style="font-size:12px; color:#666; margin-top:20px;">If you didn't request a password reset, please ignore this email.</p>
+          </div>
+          
+          <div style="text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #eee;">
+            <p style="color:#666; font-size:14px;">ADEQ Water Solutions</p>
+            <p style="color:#999; font-size:12px;">Ilorin, Kwara State, Nigeria</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Password reset email sent to ${email}`);
+    res.json({ success: true, message: "Password reset email sent" });
+  } catch (error) {
+    console.error("❌ Failed to send password reset email:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to send password reset email" });
   }
 });
 
@@ -1107,21 +1204,9 @@ app.use("/css", express.static(path.join(__dirname, "public", "css")));
 app.use("/assets", express.static(path.join(__dirname, "public", "assets")));
 app.use("/data", express.static(path.join(__dirname, "public", "data")));
 
-// Catch-all handler for SPA routing (if using client-side routing)
-app.get("*", (req, res) => {
-  // Only serve index.html for routes that don't have file extensions
-  if (!req.path.includes(".")) {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-  } else {
-    // For files with extensions, let Express handle 404
-    res.status(404).send("File not found");
-  }
-});
-
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Admin panel: http://localhost:${PORT}/admin`);
   console.log(`🔐 MongoDB Authentication routes are active`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`📧 Resend API Key configured: ${!!process.env.RESEND_API_KEY}`);
 });
