@@ -1087,15 +1087,41 @@ app.post("/send-email", async (req, res) => {
   }
 });
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, "dist")));
+// ==================== STATIC FILE SERVING ====================
 
-// The "catchall" handler: for any request that doesn't match one above, send back React's index.html file.
+// Serve main pages
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+// Serve static files from public folder
+app.use(express.static(path.join(__dirname, "public")));
+
+// Serve specific folders explicitly
+app.use("/js", express.static(path.join(__dirname, "public", "js")));
+app.use("/css", express.static(path.join(__dirname, "public", "css")));
+app.use("/assets", express.static(path.join(__dirname, "public", "assets")));
+app.use("/data", express.static(path.join(__dirname, "public", "data")));
+
+// Catch-all handler for SPA routing (if using client-side routing)
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
+  // Only serve index.html for routes that don't have file extensions
+  if (!req.path.includes(".")) {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  } else {
+    // For files with extensions, let Express handle 404
+    res.status(404).send("File not found");
+  }
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📊 Admin panel: http://localhost:${PORT}/admin`);
+  console.log(`🔐 MongoDB Authentication routes are active`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`📧 Resend API Key configured: ${!!process.env.RESEND_API_KEY}`);
 });
