@@ -199,19 +199,19 @@ const getDefaultData = (filename) => {
 };
 
 // Helper function to send email with SendGrid
-const sendEmail = async (mailOptions) => {
-  try {
-    await sgMail.send(mailOptions);
-    console.log(`✅ Email sent successfully to: ${mailOptions.to}`);
-    return { success: true };
-  } catch (error) {
-    console.error("❌ SendGrid Error:", error);
-    if (error.response) {
-      console.error("SendGrid Response Error:", error.response.body);
-    }
-    return { success: false, error: error.message };
-  }
-};
+// const sendEmail = async (mailOptions) => {
+//   try {
+//     await sgMail.send(mailOptions);
+//     console.log(`✅ Email sent successfully to: ${mailOptions.to}`);
+//     return { success: true };
+//   } catch (error) {
+//     console.error("❌ SendGrid Error:", error);
+//     if (error.response) {
+//       console.error("SendGrid Response Error:", error.response.body);
+//     }
+//     return { success: false, error: error.message };
+//   }
+// };
 
 // ==================== MONGODB AUTHENTICATION ROUTES ====================
 
