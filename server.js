@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import sgMail from "@sendgrid/mail"; // Replace nodemailer with SendGrid
+import nodemailer from "nodemailer";
 import bodyParser from "body-parser";
 import fs from "fs";
 import path from "path";
@@ -43,86 +43,24 @@ connectDB();
 const JWT_SECRET =
   process.env.JWT_SECRET || "adeq-water-solutions-secret-key-2024";
 
-// ✅ ENHANCED SENDGRID CONFIGURATION
-if (!process.env.SENDGRID_API_KEY) {
-  console.error('❌ SENDGRID_API_KEY is missing from environment variables');
-} else {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  
-  // Add default configuration for better deliverability
-  sgMail.setDefaultMailSettings({
-    sandboxMode: {
-      enable: false // Make sure this is OFF
-    }
-  });
-  
-  console.log('✅ SendGrid API Key configured with enhanced settings');
-}
+// Setup Nodemailer transporter with environment variables
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER || "adeqtesting@gmail.com",
+    pass: process.env.EMAIL_PASS || "dycg fklc oxvg gpfs",
+  },
+});
 
-// Improved email sending function with DKIM alignment
-const sendEmail = async (mailOptions) => {
-  try {
-    console.log('📧 Attempting to send email with SendGrid:', {
-      to: mailOptions.to,
-      subject: mailOptions.subject,
-      from: mailOptions.from
-    });
+// Log email configuration (without showing full password)
+console.log("📧 Email configuration:", {
+  user: process.env.EMAIL_USER || "adeqtesting@gmail.com",
+  service: "gmail",
+  hasPassword: !!process.env.EMAIL_PASS,
+});
 
-    // Enhanced email options with deliverability improvements
-    const enhancedOptions = {
-      ...mailOptions,
-      mailSettings: {
-        bypassListManagement: {
-          enable: false
-        },
-        footer: {
-          enable: false
-        },
-        sandboxMode: {
-          enable: false // CRITICAL: Make sure this is disabled
-        }
-      },
-      trackingSettings: {
-        clickTracking: {
-          enable: false // Reduce spam score by disabling tracking
-        },
-        openTracking: {
-          enable: false // Reduce spam score
-        },
-        subscriptionTracking: {
-          enable: false
-        }
-      },
-      headers: {
-        'X-Entity-Ref': 'ADEQ-WATER-SOLUTIONS',
-        'List-Unsubscribe': '<https://adeqintegrated.com/unsubscribe>, <mailto:unsubscribe@adeqintegrated.com>',
-        'Precedence': 'bulk',
-        'X-Priority': '1',
-        'X-Mailer': 'ADEQ Water Solutions Server'
-      },
-      categories: ['customer-confirmation', 'transactional']
-    };
-
-    const result = await sgMail.send(enhancedOptions);
-    
-    console.log('✅ SendGrid Response:', {
-      statusCode: result[0].statusCode,
-      message: 'Email sent successfully'
-    });
-    
-    return { success: true, response: result };
-  } catch (error) {
-    console.error('❌ SendGrid Error Details:', {
-      message: error.message,
-      code: error.code,
-      response: error.response ? error.response.body : 'No response body'
-    });
-    
-    return { success: false, error: error.message };
-  }
-};
-
-// Helper function to read JSON files
+//Helper function to read JSON files
 const readJSONFile = (filename) => {
   try {
     const filePath = path.join(dataDir, filename); // ✅ Use dataDir
@@ -198,21 +136,6 @@ const getDefaultData = (filename) => {
   return defaults[filename] || {};
 };
 
-// Helper function to send email with SendGrid
-// const sendEmail = async (mailOptions) => {
-//   try {
-//     await sgMail.send(mailOptions);
-//     console.log(`✅ Email sent successfully to: ${mailOptions.to}`);
-//     return { success: true };
-//   } catch (error) {
-//     console.error("❌ SendGrid Error:", error);
-//     if (error.response) {
-//       console.error("SendGrid Response Error:", error.response.body);
-//     }
-//     return { success: false, error: error.message };
-//   }
-// };
-
 // ==================== MONGODB AUTHENTICATION ROUTES ====================
 
 // Register User
@@ -248,10 +171,10 @@ app.post("/api/auth/register", async (req, res) => {
 
     console.log(`✅ New user registered: ${email}`);
 
-    // Send verification email with SendGrid
+    // Send verification email
     try {
       const mailOptions = {
-        from: process.env.EMAIL_USER || "adeqtesting@gmail.com",
+        from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
         to: email,
         subject: "Verify Your Email Address - ADEQ Water Solutions",
         html: `
@@ -279,7 +202,7 @@ app.post("/api/auth/register", async (req, res) => {
         `,
       };
 
-      await sendEmail(mailOptions);
+      await transporter.sendMail(mailOptions);
       console.log(`✅ Verification email sent to ${email}`);
     } catch (emailError) {
       console.error("❌ Failed to send verification email:", emailError);
@@ -434,10 +357,10 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
     console.log("✅ Reset code generated and saved to user:", resetCode);
 
-    // Send reset email with SendGrid
+    // Send reset email
     try {
       const mailOptions = {
-        from: process.env.EMAIL_USER || "adeqtesting@gmail.com",
+        from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
         to: email,
         subject: "Password Reset Request - ADEQ Water Solutions",
         html: `
@@ -466,7 +389,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
         `,
       };
 
-      await sendEmail(mailOptions);
+      await transporter.sendMail(mailOptions);
       console.log(`✅ Password reset email sent to ${email}`);
     } catch (emailError) {
       console.error("❌ Failed to send password reset email:", emailError);
@@ -777,7 +700,7 @@ app.post("/api/equipment/update", (req, res) => {
   }
 });
 
-// Your existing email routes (updated for SendGrid)
+// Your existing email routes (unchanged)
 app.post("/send-email", async (req, res) => {
   console.log("📧 Received email request:", req.body);
 
@@ -1005,43 +928,48 @@ app.post("/send-email", async (req, res) => {
               <td style="padding:10px; border-bottom:1px solid #eee;">Equipment Purchase</td>
             </tr>
             <tr>
+              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Items:</td>
+              <td style="padding:10px; border-bottom:1px solid #eee;">
+                <ul style="margin:0; padding-left:20px;">
+                  ${orderDetails
+                    .map(
+                      (item) => `
+                    <li><strong>${item.product}</strong> - Quantity: ${
+                        item.quantity
+                      } - Price: ₦${(
+                        item.price * item.quantity
+                      ).toLocaleString()}</li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              </td>
+            </tr>
+            <tr>
               <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Total Amount:</td>
               <td style="padding:10px; border-bottom:1px solid #eee;">₦${amount.toLocaleString()}</td>
             </tr>
           </table>
-
-          <h4 style="color:#dc2626;">Order Items:</h4>
-          <ul>
-            ${orderDetails
-              .map(
-                (item) => `
-              <li><strong>${item.product}</strong> - Quantity: ${
-                  item.quantity
-                } - Price: ₦${(item.price * item.quantity).toLocaleString()}</li>
-            `
-              )
-              .join("")}
-          </ul>
         </div>
 
         <div style="background:#f0f9ff; padding:15px; border-radius:8px; margin:20px 0;">
           <h4 style="color:#0e7490; margin-top:0;">Action Required:</h4>
-          <p>Please contact the customer within <strong>24 hours</strong> to confirm order details and arrange shipping.</p>
+          <p>Please prepare the equipment for shipping and contact the customer within 24 hours.</p>
           <p><strong>Customer Phone:</strong> ${phone}</p>
           <p><strong>Customer Email:</strong> ${email}</p>
         </div>
       </div>
     `;
   } else {
-    ownerSubject = `🚨 NEW BOOKING - ${reference}`;
+    ownerSubject = `🚨 NEW BOOKING: ${service} - ${reference}`;
     const totalAmount = paymentType === "half" ? amount * 2 : amount;
 
     ownerHtml = `
       <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:8px;">
-        <h2 style="color:#dc2626; text-align:center;">NEW BOOKING! 🚨</h2>
+        <h2 style="color:#dc2626; text-align:center;">NEW BOOKING: ${service} - ${reference}</h2>
         
         <div style="background:#fef2f2; padding:20px; border-radius:8px; margin:20px 0;">
-          <h3 style="color:#dc2626; margin-top:0;">Booking Details</h3>
+          <h3 style="color:#dc2626; margin-top:0;">Customer Booking Details</h3>
           
           <table style="width:100%; border-collapse:collapse; margin:20px 0;">
             <tr>
@@ -1075,110 +1003,210 @@ app.post("/send-email", async (req, res) => {
               <td style="padding:10px; border-bottom:1px solid #eee;">${
                 paymentType === "half" ? "50% Deposit" : "Full Payment"
               }</td>
-            </tr>
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Amount ${
-                paymentType === "half" ? "Deposited" : "Paid"
-              }:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">₦${amount.toLocaleString()}</td>
-            </tr>
-            ${
-              paymentType === "half"
-                ? `
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Remaining Balance:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">₦${amount.toLocaleString()}</td>
-            </tr>
-            `
-                : ""
-            }
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Total Amount:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">₦${totalAmount.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Location:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">${location}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Preferred Date:</td>
-              <td style="padding:10px; border-bottom:1px solid #eee;">${date}</td>
-            </tr>
-            ${
-              details
-                ? `
+          </tr>
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Amount Received:</td>
+            <td style="padding:10px; border-bottom:1px solid #eee;">₦${amount.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Total Amount:</td>
+            <td style="padding:10px; border-bottom:1px solid #eee;">₦${totalAmount.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Location:</td>
+            <td style="padding:10px; border-bottom:1px solid #eee;">${location}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Preferred Date:</td>
+            <td style="padding:10px; border-bottom:1px solid #eee;">${date}</td>
+          </tr>
+          ${
+            details
+              ? `
             <tr>
               <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold;">Details:</td>
               <td style="padding:10px; border-bottom:1px solid #eee;">${details}</td>
             </tr>
             `
-                : ""
-            }
-          </table>
-        </div>
-
-        <div style="background:#f0f9ff; padding:15px; border-radius:8px; margin:20px 0;">
-          <h4 style="color:#0e7490; margin-top:0;">Action Required:</h4>
-          <p>Please contact the customer within <strong>24 hours</strong> to confirm booking details and schedule.</p>
-          <p><strong>Customer Phone:</strong> ${phone}</p>
-          <p><strong>Customer Email:</strong> ${email}</p>
-        </div>
+              : ""
+          }
+        </table>
       </div>
-    `;
+
+      <div style="background:#f0f9ff; padding:15px; border-radius:8px; margin:20px 0;">
+        <h4 style="color:#0e7490; margin-top:0;">Action Required:</h4>
+        <p>Please contact the customer within 24 hours to confirm the booking schedule.</p>
+        <p><strong>Customer Phone:</strong> ${phone}</p>
+        <p><strong>Customer Email:</strong> ${email}</p>
+      </div>
+    </div>
+  `;
   }
 
+  const customerMailOptions = {
+    from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
+    to: email,
+    subject: customerSubject,
+    html: customerHtml,
+  };
+
+  const ownerMailOptions = {
+    from: "ADEQ Booking System <adeqtesting@gmail.com>",
+    to: "adeqtesting@gmail.com", // Your actual business email
+    subject: ownerSubject,
+    html: ownerHtml,
+  };
+
   try {
-    // Send customer email
-    const customerEmailResult = await sendEmail({
-      from: process.env.EMAIL_USER || "adeqtesting@gmail.com",
-      to: email,
-      subject: customerSubject,
-      html: customerHtml,
-    });
+    await Promise.all([
+      transporter.sendMail(customerMailOptions),
+      transporter.sendMail(ownerMailOptions),
+    ]);
 
-    // Send owner email
-    const ownerEmailResult = await sendEmail({
-      from: process.env.EMAIL_USER || "adeqtesting@gmail.com",
-      to: process.env.EMAIL_USER || "adeqtesting@gmail.com",
-      subject: ownerSubject,
-      html: ownerHtml,
-    });
+    console.log("✅ Emails sent successfully!");
+    console.log("📧 Customer email sent to:", email);
+    console.log("📧 Owner email sent to: adeqtesting@gmail.com");
 
-    if (customerEmailResult.success && ownerEmailResult.success) {
-      res.json({
-        success: true,
-        message: "Emails sent successfully!",
-        reference: reference,
-      });
-    } else {
-      console.error("❌ Email sending failed:", {
-        customer: customerEmailResult,
-        owner: ownerEmailResult,
-      });
-      res.status(500).json({
-        success: false,
-        message: "Failed to send one or more emails",
-      });
-    }
+    res.json({
+      success: true,
+      message: "Confirmation emails sent successfully",
+    });
   } catch (error) {
-    console.error("❌ Email sending error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to send emails",
-      error: error.message,
+    console.error("❌ Email Error:", error);
+    res.json({
+      success: true, // Still return success so payment doesn't fail
+      message:
+        "Payment successful! There was an issue with email notifications, but we will contact you shortly.",
+      emailError: true,
     });
   }
 });
 
-// Serve static files from public directory
-app.use(express.static("public"));
+//Verification Email Route
+app.post("/api/send-verification", async (req, res) => {
+  const { email, code } = req.body;
 
-// Start server
+  if (!email || !code) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing email or code" });
+  }
+
+  try {
+    const mailOptions = {
+      from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
+      to: email,
+      subject: "ADEQ Water Solutions",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:8px;">
+          <h2 style="color:#0e7490; text-align:center;">ADEQ Water Solutions</h2>
+          
+          <div style="background:#f0f9ff; padding:20px; border-radius:8px; margin:20px 0;">
+            <h3 style="color:#0e7490; margin-top:0;">Email Verification</h3>
+            <p>Thank you for registering with ADEQ Water Solutions!</p>
+            <p>Your verification code is:</p>
+            <div style="text-align:center; margin:20px 0;">
+              <div style="display:inline-block; background:#0e7490; color:white; padding:15px 30px; border-radius:8px; font-size:28px; font-weight:bold; letter-spacing:3px;">
+                ${code}
+              </div>
+            </div>
+            <p>Enter this code in the verification form to complete your registration.</p>
+            <p style="font-size:12px; color:#666; margin-top:20px;">If you didn't request this code, please ignore this email.</p>
+          </div>
+          
+          <div style="text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #eee;">
+            <p style="color:#666; font-size:14px;">Thank you for choosing ADEQ Water Solutions</p>
+            <p style="color:#999; font-size:12px;">Ilorin, Kwara State, Nigeria</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Verification email sent to ${email}`);
+    res.json({ success: true, message: "Verification email sent" });
+  } catch (error) {
+    console.error("❌ Failed to send verification email:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to send verification email" });
+  }
+});
+
+// ✅ Enhanced Password Reset Email Route
+app.post("/api/send-password-reset", async (req, res) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing email or code" });
+  }
+
+  try {
+    const mailOptions = {
+      from: "ADEQ Water Solutions <adeqtesting@gmail.com>",
+      to: email,
+      subject: "Password Reset Request - ADEQ Water Solutions",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:20px; border:1px solid #eee; border-radius:8px;">
+          <h2 style="color:#0e7490; text-align:center;">ADEQ Water Solutions</h2>
+          
+          <div style="background:#f0f9ff; padding:20px; border-radius:8px; margin:20px 0;">
+            <h3 style="color:#0e7490; margin-top:0;">Password Reset Request</h3>
+            <p>We received a request to reset your password for your ADEQ Water Solutions account.</p>
+            <p>Your password reset code is:</p>
+            <div style="text-align:center; margin:20px 0;">
+              <div style="display:inline-block; background:#0e7490; color:white; padding:15px 30px; border-radius:8px; font-size:28px; font-weight:bold; letter-spacing:3px;">
+                ${code}
+              </div>
+            </div>
+            <p>Enter this code in the password reset form to create a new password.</p>
+            <p style="font-size:12px; color:#666; margin-top:20px;">If you didn't request a password reset, please ignore this email.</p>
+          </div>
+          
+          <div style="text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #eee;">
+            <p style="color:#666; font-size:14px;">ADEQ Water Solutions</p>
+            <p style="color:#999; font-size:12px;">Ilorin, Kwara State, Nigeria</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Password reset email sent to ${email}`);
+    res.json({ success: true, message: "Password reset email sent" });
+  } catch (error) {
+    console.error("❌ Failed to send password reset email:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to send password reset email" });
+  }
+});
+
+// ==================== STATIC FILE SERVING ====================
+
+// Serve main pages
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+// Serve static files from public folder
+app.use(express.static(path.join(__dirname, "public")));
+
+// Serve specific folders explicitly
+app.use("/js", express.static(path.join(__dirname, "public", "js")));
+app.use("/css", express.static(path.join(__dirname, "public", "css")));
+app.use("/assets", express.static(path.join(__dirname, "public", "assets")));
+app.use("/data", express.static(path.join(__dirname, "public", "data")));
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Admin panel: http://localhost:${PORT}/admin`);
   console.log(`🔐 MongoDB Authentication routes are active`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📧 SendGrid configured: ${!!process.env.SENDGRID_API_KEY}`);
 });
